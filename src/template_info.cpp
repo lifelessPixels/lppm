@@ -70,6 +70,16 @@ std::variant<std::string, template_info> template_info::parse_from_file(const st
                 }
 
                 case parser_state::inside_command: {
+                    // make escapes
+                    if (last_character == '\\') {
+                        current_command += current;
+                        break;
+                    }
+
+                    // ignore backslashes
+                    if (current == '\\')
+                        break;
+
                     // treat unescaped quotes specially
                     if (current == '"' && last_character != '\\') {
                         // add command to commands list
@@ -149,10 +159,10 @@ std::optional<std::string> template_info::run_commands_at(std::string directory_
     // execute commands one-by-one
     for (auto& command : m_commands) {
         std::string substituted_command = do_the_substitutions(command, mappings);
-        int result = !os::run_command(command);
+        int result = !os::run_command(substituted_command);
         if (!result) {
             os::set_working_directory(saved_wd);
-            return std::format("executed command `{}` returned non-zero ({}) exit code", command, result);
+            return std::format("executed command `{}` returned non-zero ({}) exit code", substituted_command, result);
         }
     }
 
