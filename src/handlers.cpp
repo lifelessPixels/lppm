@@ -181,8 +181,10 @@ bool project_init_handler(const std::vector<std::string>& arguments) {
     auto mappings = globals::the().mappings();
     mappings.insert_or_assign("PROJECT_NAME", std::filesystem::path { target_path }.filename());
     for (auto& directory_entry : std::filesystem::recursive_directory_iterator { the_template.base_directory() }) {
+        // do the substitutions in file name if necessary
         auto relative_path = std::filesystem::relative(directory_entry.path(), the_template.base_directory());
-        std::string path_in_target = target_path / relative_path;
+        std::string unsubstituted_name = target_path / relative_path;
+        std::string path_in_target = do_the_substitutions(unsubstituted_name, mappings);
 
         // if the entry refers to the directory, create it in target directory
         if (std::error_code code; directory_entry.is_directory(code) || code) {
