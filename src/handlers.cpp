@@ -154,6 +154,8 @@ bool project_init_handler(const std::vector<std::string>& arguments) {
     // get arguments
     auto const& template_name = arguments[0];
     std::string target_path = std::filesystem::absolute(arguments[1]);
+    if (target_path.ends_with(std::filesystem::path::preferred_separator))
+        target_path.pop_back();
 
     // ensure the target directory exists...
     if (std::error_code code; !std::filesystem::is_directory(target_path, code) || code) {
